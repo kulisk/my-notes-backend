@@ -7,4 +7,16 @@ export class Note {
 
   @Column()
   title: string;
+
+  @Column()
+  content: string;
+
+  @Column('text', { array: true })
+  images: string[];
+
+  @Column('text', { array: true })
+  tags: string[];
+
+  @Column()
+  isPinned: boolean;
 }
