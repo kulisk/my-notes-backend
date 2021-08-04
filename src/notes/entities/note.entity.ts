@@ -1,4 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BeforeInsert,
+  Column,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { UserEntity } from '../../users/user.entity';
 
 @Entity()
 export class Note {
@@ -19,4 +26,15 @@ export class Note {
 
   @Column()
   isPinned: boolean;
+
+  @ManyToOne((type) => UserEntity)
+  owner?: UserEntity;
+
+  @BeforeInsert()
+  async setDefaultValues() {
+    this.content = '';
+    this.images = [];
+    this.tags = [];
+    this.isPinned = false;
+  }
 }

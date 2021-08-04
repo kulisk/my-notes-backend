@@ -34,9 +34,9 @@ export class UsersService {
     return toUserDto(user);
   }
 
-  async findOne(options?: object): Promise<UserDto> {
+  async findOne(options?: object): Promise<UserEntity> {
     const user = await this.userRepository.findOne(options);
-    return toUserDto(user);
+    return user;
   }
 
   async findByLogin({ login, password }: LoginUserDto): Promise<UserDto> {
@@ -47,7 +47,6 @@ export class UsersService {
     }
 
     const areEqual = await bcrypt.compare(password, user.password);
-    console.log(areEqual);
     if (!areEqual) {
       throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
     }
