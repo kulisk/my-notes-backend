@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Req,
+  UseInterceptors,
 } from '@nestjs/common';
 import { NotesService } from './notes.service';
 import { CreateNoteDto } from './dto/create-note.dto';
@@ -15,6 +16,7 @@ import { UpdateNoteDto } from './dto/update-note.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { Note } from './entities/note.entity';
 import { UserDto } from '../users/dto/user.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('notes')
 export class NotesController {
@@ -42,7 +44,19 @@ export class NotesController {
 
   @Patch(':id')
   @UseGuards(AuthGuard())
-  update(@Param('id') id: string, @Body() updateNoteDto: UpdateNoteDto) {
+  @UseInterceptors(FileInterceptor('file'))
+  update(@Param('id') id: string, @Body() updateNote) {
+    const keys = Object.keys(updateNote);
+    const values = Object.values(updateNote);
+    const updateNoteDto: UpdateNoteDto = {
+      title: '',
+      content: '',
+      images: [],
+      tags: [],
+    };
+    for (let i = 0; i < keys.length; i++) {
+      updateNoteDto[keys[i]] = values[i];
+    }
     return this.notesService.update(+id, updateNoteDto);
   }
 

@@ -49,6 +49,7 @@ export class NotesService {
     id: number,
     updateNoteDto: UpdateNoteDto,
   ): Promise<UpdateResult> {
+    // console.log(updateNoteDto);
     return await this.noteRepository.update(id, updateNoteDto);
   }
 
