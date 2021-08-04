@@ -1,30 +1,69 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
-import { UserEntity } from '../users/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from '../users/dto/create-user.dto';
+import { LoginUserDto } from '../users/dto/login-user.dto';
+import { UserDto } from '../users/dto/user.dto';
+import { JwtPayload } from './jwt.strategy';
+import { jwtConstants } from './constants';
 
-// import { PassportModule } from "@nestjs/passport";
+export interface RegistrationStatus {
+  success: boolean;
+  message: string;
+}
+
+export interface LoginStatus {
+  login: object;
+}
 
 @Injectable()
 export class AuthService {
-  constructor(private usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly jwtService: JwtService,
+  ) {}
 
-  async validateUser(login: keyof UserEntity, password: string): Promise<any> {
-    const users = await this.usersService.findOne(login);
-    if (users.length !== 1) {
-      console.log('Founded users array has a wrong length');
-      return null;
+  async validateUser(payload: JwtPayload): Promise<UserDto> {
+    const user = await this.usersService.findByPayload(payload);
+    if (!user) {
+      throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
     }
-    const user: UserEntity = users[0];
-    if (user && user.password === password) {
-      const { password, ...result } = user;
-      return result;
-    }
-    return null;
+    return user;
   }
 
-  async login(user: any) {}
+  async login(loginUserDto: LoginUserDto): Promise<LoginStatus> {
+    const user = await this.usersService.findByLogin(loginUserDto);
+    // console.log(user);
+    const token = this._createToken(user);
 
-  async registration(userDto: CreateUserDto) {}
+    return {
+      login: user.login,
+      ...token,
+    };
+  }
+
+  private _createToken({ login }: UserDto): any {
+    const user: JwtPayload = { login };
+    const accessToken = this.jwtService.sign(user);
+    return {
+      expiresIn: jwtConstants.expiresIn,
+      accessToken,
+    };
+  }
+
+  async register(userDto: CreateUserDto): Promise<RegistrationStatus> {
+    let status: RegistrationStatus = {
+      success: true,
+      message: 'user registered',
+    };
+    try {
+      await this.usersService.create(userDto);
+    } catch (err) {
+      status = {
+        success: false,
+        message: err,
+      };
+    }
+    return status;
+  }
 }

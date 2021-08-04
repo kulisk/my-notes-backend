@@ -15,20 +15,23 @@ export class UsersService {
     private userRepository: Repository<UserEntity>,
   ) {}
 
-  async create(userDto: CreateUserDto): Promise<UserEntity> {
-    try {
-      const user: UserEntity = this.userRepository.create();
-      const { login, email, password } = userDto;
+  async create(userDto: CreateUserDto): Promise<UserDto> {
+    const { login, password, email } = userDto;
 
-      user.login = login;
-      user.email = email;
-      user.password = password;
-
-      await this.userRepository.save(user);
-      return user;
-    } catch (e) {
-      console.log('User was not created', e);
+    const userInDb = await this.userRepository.findOne({
+      where: { login },
+    });
+    if (userInDb) {
+      throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
     }
+
+    const user: UserEntity = await this.userRepository.create({
+      login,
+      password,
+      email,
+    });
+    await this.userRepository.save(user);
+    return toUserDto(user);
   }
 
   async findOne(options?: object): Promise<UserDto> {
@@ -43,8 +46,8 @@ export class UsersService {
       throw new HttpException('User not found', HttpStatus.UNAUTHORIZED);
     }
 
-    const areEqual = await bcrypt.compare(user.password, password);
-
+    const areEqual = await bcrypt.compare(password, user.password);
+    console.log(areEqual);
     if (!areEqual) {
       throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
     }

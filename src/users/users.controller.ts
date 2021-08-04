@@ -19,6 +19,6 @@ export class UsersController {
 
   @Get(':login')
   findOne(@Param('login') login: keyof UserEntity) {
-    return this.usersService.findOne(login);
+    return this.usersService.findOne({ login });
   }
 }
