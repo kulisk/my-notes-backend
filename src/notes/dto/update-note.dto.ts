@@ -1,6 +1,8 @@
+import { ImageEntity } from '../../images/image.entity';
+
 export class UpdateNoteDto {
   title: string;
   content: string;
-  images: string[];
+  images: ImageEntity[];
   tags: string[];
 }

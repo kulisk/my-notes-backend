@@ -13,12 +13,13 @@ export class ImagesService {
     private imageRepository: Repository<ImageEntity>,
   ) {}
 
-  async create(file: Express.Multer.File, note: Note): Promise<any> {
+  async create(file: Express.Multer.File, note: Note): Promise<ImageEntity> {
     const image: ImageDto = new ImageDto();
     image.originalName = file.originalname;
     image.customName = file.filename;
     image.path = file.path;
     image.note = note;
+    // const savedImage: ImageEntity = await this.imageRepository.save(image);
     return this.imageRepository.save(image);
   }
 

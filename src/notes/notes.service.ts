@@ -49,7 +49,11 @@ export class NotesService {
   }
 
   async findOne(id: number): Promise<Note> {
-    return await this.noteRepository.findOne({ where: { id: id } });
+    return await this.noteRepository
+      .createQueryBuilder('note')
+      .leftJoinAndSelect('note.images', 'image')
+      .where('note.id= :id', { id: id })
+      .getOne();
   }
 
   async update(

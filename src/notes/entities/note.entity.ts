@@ -1,5 +1,12 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { UserEntity } from '../../users/user.entity';
+import { ImageEntity } from '../../images/image.entity';
 
 @Entity()
 export class Note {
@@ -17,6 +24,9 @@ export class Note {
 
   @Column()
   isPinned: boolean;
+
+  @OneToMany((type) => ImageEntity, (image) => image.note)
+  images?: ImageEntity[];
 
   @ManyToOne((type) => UserEntity)
   owner?: UserEntity;
