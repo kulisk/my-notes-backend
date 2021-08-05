@@ -4,3 +4,5 @@ export const emptyNote = {
   images: [],
   tags: [],
 };
+
+export const MaxFilesCount = 10;

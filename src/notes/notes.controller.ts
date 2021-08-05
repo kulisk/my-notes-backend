@@ -9,14 +9,18 @@ import {
   UseGuards,
   Req,
   UseInterceptors,
+  UploadedFiles,
 } from '@nestjs/common';
 import { NotesService } from './notes.service';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { UpdateNoteDto } from './dto/update-note.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { Note } from './entities/note.entity';
 import { UserDto } from '../users/dto/user.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { FileHelper } from '../shared/fileHelper';
+import { Express } from 'express';
+import { MaxFilesCount } from './constants';
 
 @Controller('notes')
 export class NotesController {
@@ -24,10 +28,21 @@ export class NotesController {
 
   @Post()
   @UseGuards(AuthGuard())
-  @UseInterceptors(FileInterceptor('file'))
-  create(@Body() createNoteDto, @Req() req: any): Promise<CreateNoteDto> {
+  @UseInterceptors(
+    FilesInterceptor('files', MaxFilesCount, {
+      storage: diskStorage({
+        destination: FileHelper.destinationPath,
+        filename: FileHelper.customFileName,
+      }),
+    }),
+  )
+  create(
+    @Body() createNoteDto,
+    @Req() req: any,
+    @UploadedFiles() files: Array<Express.Multer.File>,
+  ): Promise<CreateNoteDto> {
     const user = <UserDto>req.user;
-    return this.notesService.create(user, createNoteDto);
+    return this.notesService.create(user, createNoteDto, files);
   }
 
   @Get()
@@ -45,9 +60,20 @@ export class NotesController {
 
   @Patch(':id')
   @UseGuards(AuthGuard())
-  @UseInterceptors(FileInterceptor('file'))
-  update(@Param('id') id: string, @Body() updateNoteDto: UpdateNoteDto) {
-    return this.notesService.update(+id, updateNoteDto);
+  @UseInterceptors(
+    FilesInterceptor('files', MaxFilesCount, {
+      storage: diskStorage({
+        destination: FileHelper.destinationPath,
+        filename: FileHelper.customFileName,
+      }),
+    }),
+  )
+  update(
+    @Param('id') id: string,
+    @Body() updateNoteDto: UpdateNoteDto,
+    @UploadedFiles() files: Array<Express.Multer.File>,
+  ) {
+    return this.notesService.update(+id, updateNoteDto, files);
   }
 
   @Delete(':id')

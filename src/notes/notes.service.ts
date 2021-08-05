@@ -16,12 +16,17 @@ export class NotesService {
     private usersService: UsersService,
   ) {}
 
-  async create({ login }: UserDto, createNote): Promise<CreateNoteDto> {
+  async create(
+    { login }: UserDto,
+    createNote,
+    files: Express.Multer.File[],
+  ): Promise<CreateNoteDto> {
     const owner = await this.usersService.findOne({ where: { login } });
     const note: CreateNoteDto = emptyNote;
     for (const [key, value] of Object.entries(createNote)) {
       note[key] = value;
     }
+    note.images = files.map((item) => item.filename);
     note.owner = owner;
     note.isPinned = false;
     await this.noteRepository.save(note);
@@ -42,11 +47,16 @@ export class NotesService {
     return await this.noteRepository.findOne({ where: { id: id } });
   }
 
-  async update(id: number, updateNote): Promise<UpdateResult> {
+  async update(
+    id: number,
+    updateNote,
+    files: Express.Multer.File[],
+  ): Promise<UpdateResult> {
     const updateNoteDto: UpdateNoteDto = emptyNote;
     for (const [key, value] of Object.entries(updateNote)) {
       updateNoteDto[key] = value;
     }
+    updateNoteDto.images = files.map((item) => item.filename);
     return await this.noteRepository.update(id, updateNoteDto);
   }
 
