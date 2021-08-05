@@ -6,6 +6,7 @@ import { DeleteResult, Repository, UpdateResult } from 'typeorm';
 import { Note } from './entities/note.entity';
 import { UserDto } from '../users/dto/user.dto';
 import { UsersService } from '../users/users.service';
+import { emptyNote } from './constants';
 
 @Injectable()
 export class NotesService {
@@ -15,18 +16,14 @@ export class NotesService {
     private usersService: UsersService,
   ) {}
 
-  async create(
-    { login }: UserDto,
-    createNoteDto: CreateNoteDto,
-  ): Promise<Note> {
-    const note: Note = this.noteRepository.create();
+  async create({ login }: UserDto, createNote): Promise<CreateNoteDto> {
     const owner = await this.usersService.findOne({ where: { login } });
-    const { title, content, images, tags } = createNoteDto;
-    note.title = title;
-    note.content = content;
-    note.images = images;
-    note.tags = tags;
+    const note: CreateNoteDto = emptyNote;
+    for (const [key, value] of Object.entries(createNote)) {
+      note[key] = value;
+    }
     note.owner = owner;
+    note.isPinned = false;
     await this.noteRepository.save(note);
     return note;
   }
@@ -45,11 +42,11 @@ export class NotesService {
     return await this.noteRepository.findOne({ where: { id: id } });
   }
 
-  async update(
-    id: number,
-    updateNoteDto: UpdateNoteDto,
-  ): Promise<UpdateResult> {
-    // console.log(updateNoteDto);
+  async update(id: number, updateNote): Promise<UpdateResult> {
+    const updateNoteDto: UpdateNoteDto = emptyNote;
+    for (const [key, value] of Object.entries(updateNote)) {
+      updateNoteDto[key] = value;
+    }
     return await this.noteRepository.update(id, updateNoteDto);
   }
 

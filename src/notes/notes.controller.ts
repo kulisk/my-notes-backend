@@ -24,7 +24,8 @@ export class NotesController {
 
   @Post()
   @UseGuards(AuthGuard())
-  create(@Body() createNoteDto: CreateNoteDto, @Req() req: any): Promise<Note> {
+  @UseInterceptors(FileInterceptor('file'))
+  create(@Body() createNoteDto, @Req() req: any): Promise<CreateNoteDto> {
     const user = <UserDto>req.user;
     return this.notesService.create(user, createNoteDto);
   }
@@ -45,18 +46,7 @@ export class NotesController {
   @Patch(':id')
   @UseGuards(AuthGuard())
   @UseInterceptors(FileInterceptor('file'))
-  update(@Param('id') id: string, @Body() updateNote) {
-    const keys = Object.keys(updateNote);
-    const values = Object.values(updateNote);
-    const updateNoteDto: UpdateNoteDto = {
-      title: '',
-      content: '',
-      images: [],
-      tags: [],
-    };
-    for (let i = 0; i < keys.length; i++) {
-      updateNoteDto[keys[i]] = values[i];
-    }
+  update(@Param('id') id: string, @Body() updateNoteDto: UpdateNoteDto) {
     return this.notesService.update(+id, updateNoteDto);
   }
 
