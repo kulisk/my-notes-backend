@@ -6,7 +6,8 @@ import { DeleteResult, Repository, UpdateResult } from 'typeorm';
 import { Note } from './entities/note.entity';
 import { UserDto } from '../users/dto/user.dto';
 import { UsersService } from '../users/users.service';
-import { emptyNote } from './constants';
+import { ImagesService } from '../images/images.service';
+import { ImageEntity } from '../images/image.entity';
 
 @Injectable()
 export class NotesService {
@@ -14,6 +15,7 @@ export class NotesService {
     @InjectRepository(Note)
     private noteRepository: Repository<Note>,
     private usersService: UsersService,
+    private imagesService: ImagesService,
   ) {}
 
   async create(
@@ -22,14 +24,17 @@ export class NotesService {
     files: Express.Multer.File[],
   ): Promise<CreateNoteDto> {
     const owner = await this.usersService.findOne({ where: { login } });
-    const note: CreateNoteDto = emptyNote;
+    const note: CreateNoteDto = new CreateNoteDto();
+    note.title = '';
+    note.content = '';
+    note.tags = [];
+    note.isPinned = false;
     for (const [key, value] of Object.entries(createNote)) {
       note[key] = value;
     }
-    note.images = files.map((item) => item.filename);
     note.owner = owner;
-    note.isPinned = false;
-    await this.noteRepository.save(note);
+    const savedNote: Note = await this.noteRepository.save(note);
+    files.forEach((value) => this.imagesService.create(value, savedNote));
     return note;
   }
 
@@ -52,15 +57,18 @@ export class NotesService {
     updateNote,
     files: Express.Multer.File[],
   ): Promise<UpdateResult> {
-    const updateNoteDto: UpdateNoteDto = emptyNote;
+    const updateNoteDto: UpdateNoteDto = new UpdateNoteDto();
     for (const [key, value] of Object.entries(updateNote)) {
       updateNoteDto[key] = value;
     }
-    updateNoteDto.images = files.map((item) => item.filename);
     return await this.noteRepository.update(id, updateNoteDto);
   }
 
   async remove(id: number): Promise<DeleteResult> {
+    const imagesToDelete: ImageEntity[] = await this.imagesService.findByNoteId(
+      id,
+    );
+    imagesToDelete.forEach((item) => this.imagesService.delete(item));
     return await this.noteRepository.delete(id);
   }
 }

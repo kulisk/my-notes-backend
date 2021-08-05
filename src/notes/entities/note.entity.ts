@@ -1,10 +1,4 @@
-import {
-  BeforeInsert,
-  Column,
-  Entity,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { UserEntity } from '../../users/user.entity';
 
 @Entity()
@@ -19,9 +13,6 @@ export class Note {
   content: string;
 
   @Column('text', { array: true })
-  images: string[];
-
-  @Column('text', { array: true })
   tags: string[];
 
   @Column()
@@ -29,12 +20,4 @@ export class Note {
 
   @ManyToOne((type) => UserEntity)
   owner?: UserEntity;
-
-  @BeforeInsert()
-  async setDefaultValues() {
-    this.content = '';
-    this.images = [];
-    this.tags = [];
-    this.isPinned = false;
-  }
 }
