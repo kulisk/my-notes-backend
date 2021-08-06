@@ -65,6 +65,12 @@ export class NotesService {
     for (const [key, value] of Object.entries(updateNote)) {
       updateNoteDto[key] = value;
     }
+    const imagesToDelete: ImageEntity[] = await this.imagesService.findByNoteId(
+      id,
+    );
+    imagesToDelete.forEach((item) => this.imagesService.delete(item));
+    const noteToUpdate: Note = await this.noteRepository.findOne(id);
+    files.forEach((value) => this.imagesService.create(value, noteToUpdate));
     return await this.noteRepository.update(id, updateNoteDto);
   }
 
