@@ -33,7 +33,6 @@ export class AuthService {
 
   async login(loginUserDto: LoginUserDto): Promise<LoginStatus> {
     const user = await this.usersService.findByLogin(loginUserDto);
-    // console.log(user);
     const token = this._createToken(user);
 
     return {

@@ -19,8 +19,7 @@ export class ImagesService {
     image.customName = file.filename;
     image.path = file.path;
     image.note = note;
-    // const savedImage: ImageEntity = await this.imageRepository.save(image);
-    return this.imageRepository.save(image);
+    return await this.imageRepository.save(image);
   }
 
   async findByNoteId(id: number): Promise<ImageEntity[]> {
@@ -33,6 +32,6 @@ export class ImagesService {
     } catch (err) {
       console.error(err);
     }
-    return this.imageRepository.delete(image.id);
+    return await this.imageRepository.delete(image.id);
   }
 }
