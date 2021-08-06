@@ -37,8 +37,8 @@ export class NotesController {
     }),
   )
   create(
-    @Body() createNoteDto,
-    @Req() req: any,
+    @Body() createNoteDto: CreateNoteDto,
+    @Req() req,
     @UploadedFiles() files: Array<Express.Multer.File>,
   ): Promise<CreateNoteDto> {
     const user = <UserDto>req.user;

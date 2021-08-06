@@ -20,22 +20,14 @@ export class NotesService {
 
   async create(
     { login }: UserDto,
-    createNote,
+    createNoteDto: CreateNoteDto,
     files: Express.Multer.File[],
   ): Promise<CreateNoteDto> {
-    const owner = await this.usersService.findOne({ where: { login } });
-    const note: CreateNoteDto = new CreateNoteDto();
-    note.title = '';
-    note.content = '';
-    note.tags = [];
-    note.isPinned = false;
-    for (const [key, value] of Object.entries(createNote)) {
-      note[key] = value;
-    }
-    note.owner = owner;
+    const note = { ...createNoteDto } as Note;
+    note.owner = await this.usersService.findOne({ where: { login } });
     const savedNote: Note = await this.noteRepository.save(note);
     files.forEach((value) => this.imagesService.create(value, savedNote));
-    return note;
+    return createNoteDto;
   }
 
   async findAll({ id }: UserDto): Promise<Note[]> {

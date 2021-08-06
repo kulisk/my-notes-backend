@@ -1,12 +1,13 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './user.entity';
-import { Repository } from 'typeorm';
+import { FindOneOptions, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserDto } from './dto/user.dto';
 import { toUserDto } from '../shared/mapper';
 import { LoginUserDto } from './dto/login-user.dto';
 import * as bcrypt from 'bcrypt';
+import { JwtPayload } from '../auth/jwt.strategy';
 
 @Injectable()
 export class UsersService {
@@ -34,9 +35,8 @@ export class UsersService {
     return toUserDto(user);
   }
 
-  async findOne(options?: object): Promise<UserEntity> {
-    const user = await this.userRepository.findOne(options);
-    return user;
+  async findOne(options?: FindOneOptions<UserEntity>): Promise<UserEntity> {
+    return await this.userRepository.findOne(options);
   }
 
   async findByLogin({ login, password }: LoginUserDto): Promise<UserDto> {
@@ -54,17 +54,9 @@ export class UsersService {
     return toUserDto(user);
   }
 
-  async findByPayload({ login }: any): Promise<UserDto> {
+  async findByPayload({ login }: JwtPayload): Promise<UserDto> {
     return await this.findOne({
       where: { login },
     });
-  }
-
-  async findAll(): Promise<UserEntity[]> {
-    try {
-      return await this.userRepository.find();
-    } catch (e) {
-      console.log('Users not found', e);
-    }
   }
 }

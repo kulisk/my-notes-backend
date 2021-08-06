@@ -13,7 +13,7 @@ export interface RegistrationStatus {
 }
 
 export interface LoginStatus {
-  login: object;
+  login: string;
 }
 
 @Injectable()
@@ -41,7 +41,7 @@ export class AuthService {
     };
   }
 
-  private _createToken({ login }: UserDto): any {
+  private _createToken({ login }: UserDto) {
     const user: JwtPayload = { login };
     const accessToken = this.jwtService.sign(user);
     return {

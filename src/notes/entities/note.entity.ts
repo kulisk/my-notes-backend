@@ -19,10 +19,13 @@ export class Note {
   @Column()
   content: string;
 
-  @Column('text', { array: true })
+  @Column('text', {
+    array: true,
+    nullable: true,
+  })
   tags: string[];
 
-  @Column()
+  @Column({ default: false })
   isPinned: boolean;
 
   @OneToMany((type) => ImageEntity, (image) => image.note)
