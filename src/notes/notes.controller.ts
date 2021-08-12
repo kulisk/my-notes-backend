@@ -21,6 +21,7 @@ import { diskStorage } from 'multer';
 import { FileHelper } from '../shared/fileHelper';
 import { Express } from 'express';
 import { MaxFilesCount } from './constants';
+import { CreateResultDto } from './dto/create-result.dto';
 
 @Controller('notes')
 export class NotesController {
@@ -40,7 +41,7 @@ export class NotesController {
     @Body() createNoteDto: CreateNoteDto,
     @Req() req,
     @UploadedFiles() files: Array<Express.Multer.File>,
-  ): Promise<CreateNoteDto> {
+  ): Promise<CreateResultDto> {
     const user = <UserDto>req.user;
     return this.notesService.create(user, createNoteDto, files);
   }

@@ -8,6 +8,7 @@ import { UserDto } from '../users/dto/user.dto';
 import { UsersService } from '../users/users.service';
 import { ImagesService } from '../images/images.service';
 import { ImageEntity } from '../images/image.entity';
+import { CreateResultDto } from './dto/create-result.dto';
 
 @Injectable()
 export class NotesService {
@@ -22,12 +23,13 @@ export class NotesService {
     { login }: UserDto,
     createNoteDto: CreateNoteDto,
     files: Express.Multer.File[],
-  ): Promise<CreateNoteDto> {
+  ): Promise<CreateResultDto> {
     const note = { ...createNoteDto } as Note;
     note.owner = await this.usersService.findOne({ where: { login } });
     const savedNote: Note = await this.noteRepository.save(note);
+    const createResultDto = { ...savedNote } as CreateResultDto;
     files.forEach((value) => this.imagesService.create(value, savedNote));
-    return createNoteDto;
+    return createResultDto;
   }
 
   async findAll({ id }: UserDto): Promise<Note[]> {

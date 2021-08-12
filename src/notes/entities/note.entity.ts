@@ -20,10 +20,9 @@ export class Note {
   content: string;
 
   @Column('text', {
-    array: true,
     nullable: true,
   })
-  tags: string[];
+  tags: string;
 
   @Column({ default: false })
   isPinned: boolean;
