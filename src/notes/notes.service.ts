@@ -9,6 +9,7 @@ import { UsersService } from '../users/users.service';
 import { ImagesService } from '../images/images.service';
 import { ImageEntity } from '../images/image.entity';
 import { CreateResultDto } from './dto/create-result.dto';
+import { DeleteImageInterface } from '../interfaces';
 
 @Injectable()
 export class NotesService {
@@ -56,13 +57,22 @@ export class NotesService {
     files: Express.Multer.File[],
   ): Promise<UpdateResult> {
     const updateNoteDto: UpdateNoteDto = new UpdateNoteDto();
+    let imagesToDelete: DeleteImageInterface[];
     for (const [key, value] of Object.entries(updateNote)) {
+      if (key === 'imagesToDelete') {
+        imagesToDelete = JSON.parse(updateNote[key]).map(
+          (value: DeleteImageInterface) => {
+            return { id: value.id, path: value.path };
+          },
+        );
+        continue;
+      } else if (key === 'isPinned') {
+        updateNoteDto[key] = JSON.parse(value.toString());
+        continue;
+      }
       updateNoteDto[key] = value;
     }
-    const imagesToDelete: ImageEntity[] = await this.imagesService.findByNoteId(
-      id,
-    );
-    imagesToDelete.forEach((item) => this.imagesService.delete(item));
+    await this.imagesService.deleteByIds(imagesToDelete);
     const noteToUpdate: Note = await this.noteRepository.findOne(id);
     files.forEach((value) => this.imagesService.create(value, noteToUpdate));
     return await this.noteRepository.update(id, updateNoteDto);
