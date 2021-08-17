@@ -23,6 +23,27 @@ export class ImagesService {
     return await this.imageRepository.save(image);
   }
 
+  async copy(imagesToCopy: ImageEntity[], note: Note): Promise<any> {
+    for (const imageToCopy of imagesToCopy) {
+      const [originalName, extension] = imageToCopy.originalName.split('.');
+      const newCustomName = `${originalName}-${Date.now()}-${Math.round(
+        Math.random() * 1e9,
+      )}.${extension}`;
+      const newPath = 'upload\\' + newCustomName;
+      try {
+        fs.copyFileSync(imageToCopy.path, newPath);
+      } catch (error) {
+        console.log(error);
+      }
+      const newImage = this.imageRepository.create();
+      newImage.path = newPath;
+      newImage.customName = newCustomName;
+      newImage.originalName = originalName;
+      newImage.note = note;
+      await this.imageRepository.save(newImage);
+    }
+  }
+
   async findByNoteId(id: number): Promise<ImageEntity[]> {
     return await this.imageRepository.find({ where: { note: { id } } });
   }

@@ -46,6 +46,13 @@ export class NotesController {
     return this.notesService.create(user, createNoteDto, files);
   }
 
+  @Post(':id')
+  @UseGuards(AuthGuard())
+  copy(@Param('id') id: string, @Req() req): Promise<CreateResultDto> {
+    const user = <UserDto>req.user;
+    return this.notesService.copy(+id, user);
+  }
+
   @Get()
   @UseGuards(AuthGuard())
   findAll(@Req() req: any) {

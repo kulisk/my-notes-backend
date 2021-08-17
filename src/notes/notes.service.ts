@@ -10,6 +10,7 @@ import { ImagesService } from '../images/images.service';
 import { ImageEntity } from '../images/image.entity';
 import { CreateResultDto } from './dto/create-result.dto';
 import { DeleteImageInterface } from '../interfaces';
+import { FindNoteDto } from './dto/find-note.dto';
 
 @Injectable()
 export class NotesService {
@@ -31,6 +32,17 @@ export class NotesService {
     const createResultDto = { ...savedNote } as CreateResultDto;
     files.forEach((value) => this.imagesService.create(value, savedNote));
     return createResultDto;
+  }
+
+  async copy(id: number, { login }: UserDto): Promise<CreateResultDto> {
+    const newNoteDto: FindNoteDto = await this.noteRepository.findOne(id);
+    delete newNoteDto.id;
+    const newNote: Note = { ...newNoteDto } as Note;
+    newNote.owner = await this.usersService.findOne({ where: { login } });
+    const imagesToCopy = await this.imagesService.findByNoteId(id);
+    const savedNote: Note = await this.noteRepository.save(newNote);
+    await this.imagesService.copy(imagesToCopy, savedNote);
+    return savedNote as CreateResultDto;
   }
 
   async findAll({ id }: UserDto): Promise<Note[]> {

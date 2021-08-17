@@ -8,7 +8,6 @@ export class FileHelper {
   }
 
   static destinationPath(req, file, cb) {
-    // export const UPLOAD_PATH = path.join(__dirname, ...)
     cb(null, './upload');
   }
 }
