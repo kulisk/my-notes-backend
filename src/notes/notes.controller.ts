@@ -55,7 +55,7 @@ export class NotesController {
 
   @Get()
   @UseGuards(AuthGuard())
-  findAll(@Req() req: any) {
+  findAll(@Req() req) {
     const user = <UserDto>req.user;
     return this.notesService.findAll(user);
   }
@@ -64,6 +64,13 @@ export class NotesController {
   @UseGuards(AuthGuard())
   findOne(@Param('id') id: string) {
     return this.notesService.findOne(+id);
+  }
+
+  @Get('search/:term')
+  @UseGuards(AuthGuard())
+  search(@Param('term') term: string, @Req() req) {
+    const user = <UserDto>req.user;
+    return this.notesService.search(term, user);
   }
 
   @Patch(':id')

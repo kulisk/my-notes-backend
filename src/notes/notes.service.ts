@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { UpdateNoteDto } from './dto/update-note.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeleteResult, Repository, UpdateResult } from 'typeorm';
+import { Brackets, DeleteResult, Repository, UpdateResult } from 'typeorm';
 import { Note } from './entities/note.entity';
 import { UserDto } from '../users/dto/user.dto';
 import { UsersService } from '../users/users.service';
@@ -61,6 +61,20 @@ export class NotesService {
       .leftJoinAndSelect('note.images', 'image')
       .where('note.id= :id', { id: id })
       .getOne();
+  }
+
+  async search(term: string, { id }: UserDto): Promise<Note[]> {
+    return await this.noteRepository
+      .createQueryBuilder('note')
+      .where('note.owner= :id', { id: id })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('note.title like :term', { term: `${term}%` })
+            .orWhere('note.content like :term', { term: `${term}%` })
+            .orWhere('note.tags like :term', { term: `%${term}%` });
+        }),
+      )
+      .getMany();
   }
 
   async update(
