@@ -53,7 +53,7 @@ export class NotesController {
     return this.notesService.copy(+id, user);
   }
 
-  @Get(':page')
+  @Get('pages/:page')
   @UseGuards(AuthGuard())
   findAllInPage(@Req() req, @Param('page') page: number) {
     const user = <UserDto>req.user;
