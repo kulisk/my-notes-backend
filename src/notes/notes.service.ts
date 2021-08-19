@@ -11,6 +11,7 @@ import { ImageEntity } from '../images/image.entity';
 import { CreateResultDto } from './dto/create-result.dto';
 import { DeleteImageInterface } from '../interfaces';
 import { FindNoteDto } from './dto/find-note.dto';
+import { NotesPerPage } from './constants';
 
 @Injectable()
 export class NotesService {
@@ -20,6 +21,8 @@ export class NotesService {
     private usersService: UsersService,
     private imagesService: ImagesService,
   ) {}
+
+  calcSkip = (page: number) => (page - 1) * NotesPerPage;
 
   async create(
     { login }: UserDto,
@@ -45,14 +48,17 @@ export class NotesService {
     return savedNote as CreateResultDto;
   }
 
-  async findAll({ id }: UserDto): Promise<Note[]> {
-    return await this.noteRepository.find({
-      where: {
-        owner: {
-          id,
-        },
-      },
-    });
+  async findAllInPage({ id }: UserDto, page: number): Promise<Note[]> {
+    return await this.noteRepository
+      .createQueryBuilder('note')
+      .where('note.owner= :id', { id: id })
+      .orderBy({
+        'note.isPinned': 'DESC',
+        'note.id': 'DESC',
+      })
+      .skip(this.calcSkip(page))
+      .take(NotesPerPage)
+      .getMany();
   }
 
   async findOne(id: number): Promise<Note> {
@@ -61,6 +67,13 @@ export class NotesService {
       .leftJoinAndSelect('note.images', 'image')
       .where('note.id= :id', { id: id })
       .getOne();
+  }
+
+  async getCount({ id }: UserDto): Promise<number> {
+    return await this.noteRepository
+      .createQueryBuilder('note')
+      .where('note.owner= :id', { id: id })
+      .getCount();
   }
 
   async search(term: string, { id }: UserDto): Promise<Note[]> {

@@ -53,17 +53,24 @@ export class NotesController {
     return this.notesService.copy(+id, user);
   }
 
-  @Get()
+  @Get(':page')
   @UseGuards(AuthGuard())
-  findAll(@Req() req) {
+  findAllInPage(@Req() req, @Param('page') page: number) {
     const user = <UserDto>req.user;
-    return this.notesService.findAll(user);
+    return this.notesService.findAllInPage(user, page);
   }
 
   @Get(':id')
   @UseGuards(AuthGuard())
   findOne(@Param('id') id: string) {
     return this.notesService.findOne(+id);
+  }
+
+  @Get('count/getCount')
+  @UseGuards(AuthGuard())
+  getCount(@Req() req) {
+    const user = <UserDto>req.user;
+    return this.notesService.getCount(user);
   }
 
   @Get('search/:term')
