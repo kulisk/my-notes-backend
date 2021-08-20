@@ -73,11 +73,18 @@ export class NotesController {
     return this.notesService.getCount(user);
   }
 
-  @Get('search/:term')
+  @Get('count/getCount/:term')
   @UseGuards(AuthGuard())
-  search(@Param('term') term: string, @Req() req) {
+  getSearchCount(@Param('term') term: string, @Req() req) {
     const user = <UserDto>req.user;
-    return this.notesService.search(term, user);
+    return this.notesService.getSearchCount(term, user);
+  }
+
+  @Get('search/:term/:page')
+  @UseGuards(AuthGuard())
+  search(@Param('term') term: string, @Param('page') page: string, @Req() req) {
+    const user = <UserDto>req.user;
+    return this.notesService.search(term, +page, user);
   }
 
   @Patch(':id')
