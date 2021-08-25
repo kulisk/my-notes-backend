@@ -101,6 +101,10 @@ export class NotesService {
             .orWhere('note.tags like :term', { term: `%${term}%` });
         }),
       )
+      .orderBy({
+        'note.isPinned': 'DESC',
+        'note.id': 'DESC',
+      })
       .skip(this.calcSkip(page))
       .take(NotesPerPage)
       .getMany();
