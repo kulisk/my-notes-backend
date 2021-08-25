@@ -21,7 +21,6 @@ export class NotesService {
     private usersService: UsersService,
     private imagesService: ImagesService,
   ) {}
-
   calcSkip = (page: number) => (page - 1) * NotesPerPage;
 
   async create(

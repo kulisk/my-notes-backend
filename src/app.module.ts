@@ -8,17 +8,21 @@ import { UsersModule } from './users/users.module';
 import { ImagesModule } from './images/images.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
     NotesModule,
+    ConfigModule.forRoot({
+      envFilePath: ['.env.development', '.env.production'],
+    }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: 'GenericTypes',
-      database: 'my-notes',
+      host: process.env.DB_HOST,
+      port: +process.env.DB_PORT,
+      username: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_DATABASE,
       entities: [],
       synchronize: true,
       autoLoadEntities: true,
