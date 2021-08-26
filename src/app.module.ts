@@ -26,10 +26,12 @@ import { ConfigModule } from '@nestjs/config';
       entities: [],
       synchronize: true,
       autoLoadEntities: true,
+      ssl: true,
       extra: {
-        ssl: true,
+        ssl: {
+          rejectUnauthorized: false,
+        },
       },
-      ssl: { rejectUnauthorized: false },
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'upload'),
