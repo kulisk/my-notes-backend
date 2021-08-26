@@ -26,6 +26,9 @@ import { ConfigModule } from '@nestjs/config';
       entities: [],
       synchronize: true,
       autoLoadEntities: true,
+      extra: {
+        ssl: true,
+      },
       ssl: { rejectUnauthorized: false },
     }),
     ServeStaticModule.forRoot({
