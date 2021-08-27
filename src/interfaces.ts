@@ -1,4 +1,4 @@
 export interface DeleteImageInterface {
   id: number;
-  path: string;
+  key: string;
 }

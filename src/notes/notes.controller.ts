@@ -22,6 +22,11 @@ import { FileHelper } from '../shared/fileHelper';
 import { Express } from 'express';
 import { MaxFilesCount } from './constants';
 import { CreateResultDto } from './dto/create-result.dto';
+import * as S3Storage from 'multer-s3';
+import { S3 } from 'aws-sdk';
+
+const s3 = new S3();
+const S3BucketName = 'mynotesbusket';
 
 @Controller('notes')
 export class NotesController {
@@ -31,16 +36,18 @@ export class NotesController {
   @UseGuards(AuthGuard())
   @UseInterceptors(
     FilesInterceptor('files', MaxFilesCount, {
-      storage: diskStorage({
-        destination: FileHelper.destinationPath,
-        filename: FileHelper.customFileName,
+      storage: S3Storage({
+        bucket: S3BucketName,
+        s3: s3,
+        acl: 'public-read',
+        key: FileHelper.customFileName,
       }),
     }),
   )
   create(
     @Body() createNoteDto: CreateNoteDto,
     @Req() req,
-    @UploadedFiles() files: Array<Express.Multer.File>,
+    @UploadedFiles() files,
   ): Promise<CreateResultDto> {
     const user = <UserDto>req.user;
     return this.notesService.create(user, createNoteDto, files);
@@ -91,16 +98,18 @@ export class NotesController {
   @UseGuards(AuthGuard())
   @UseInterceptors(
     FilesInterceptor('files', MaxFilesCount, {
-      storage: diskStorage({
-        destination: FileHelper.destinationPath,
-        filename: FileHelper.customFileName,
+      storage: S3Storage({
+        bucket: S3BucketName,
+        s3: s3,
+        acl: 'public-read',
+        key: FileHelper.customFileName,
       }),
     }),
   )
   update(
     @Param('id') id: string,
     @Body() updateNoteDto: UpdateNoteDto,
-    @UploadedFiles() files: Array<Express.Multer.File>,
+    @UploadedFiles() files,
   ) {
     return this.notesService.update(+id, updateNoteDto, files);
   }

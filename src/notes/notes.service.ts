@@ -12,6 +12,10 @@ import { CreateResultDto } from './dto/create-result.dto';
 import { DeleteImageInterface } from '../interfaces';
 import { FindNoteDto } from './dto/find-note.dto';
 import { NotesPerPage } from './constants';
+import { S3 } from 'aws-sdk';
+import { S3_BUCKET_NAME } from '../const';
+
+const s3 = new S3();
 
 @Injectable()
 export class NotesService {
@@ -26,7 +30,7 @@ export class NotesService {
   async create(
     { login }: UserDto,
     createNoteDto: CreateNoteDto,
-    files: Express.Multer.File[],
+    files,
   ): Promise<CreateResultDto> {
     const note = { ...createNoteDto } as Note;
     note.owner = await this.usersService.findOne({ where: { login } });
@@ -61,6 +65,23 @@ export class NotesService {
   }
 
   async findOne(id: number): Promise<Note> {
+    const images = await this.imagesService.findByNoteId(id);
+    for (const image of images) {
+      s3.getSignedUrl(
+        'putObject',
+        {
+          Bucket: S3_BUCKET_NAME,
+          Key: image.key,
+          ACL: 'public-read',
+        },
+        (err) => {
+          if (err) {
+            console.log(err);
+          }
+        },
+      );
+    }
+
     return await this.noteRepository
       .createQueryBuilder('note')
       .leftJoinAndSelect('note.images', 'image')
@@ -109,18 +130,14 @@ export class NotesService {
       .getMany();
   }
 
-  async update(
-    id: number,
-    updateNote,
-    files: Express.Multer.File[],
-  ): Promise<UpdateResult> {
+  async update(id: number, updateNote, files): Promise<UpdateResult> {
     const updateNoteDto: UpdateNoteDto = new UpdateNoteDto();
     let imagesToDelete: DeleteImageInterface[];
     for (const [key, value] of Object.entries(updateNote)) {
       if (key === 'imagesToDelete') {
         imagesToDelete = JSON.parse(updateNote[key]).map(
           (value: DeleteImageInterface) => {
-            return { id: value.id, path: value.path };
+            return { id: value.id, key: value.key };
           },
         );
         continue;
@@ -140,7 +157,10 @@ export class NotesService {
     const imagesToDelete: ImageEntity[] = await this.imagesService.findByNoteId(
       id,
     );
-    imagesToDelete.forEach((item) => this.imagesService.delete(item));
+    const deleteImages: DeleteImageInterface[] = imagesToDelete.map((image) => {
+      return { id: +image.id, key: image.key };
+    });
+    await this.imagesService.deleteByIds(deleteImages);
     return await this.noteRepository.delete(id);
   }
 }

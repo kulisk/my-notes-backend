@@ -15,12 +15,7 @@ export class ImageEntity {
     nullable: false,
     unique: true,
   })
-  customName: string;
-
-  @Column({
-    nullable: false,
-  })
-  path: string;
+  key: string;
 
   @ManyToOne((type) => Note)
   note?: Note;

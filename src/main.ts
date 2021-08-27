@@ -1,9 +1,15 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { headers } from './middleware/headers.middleware';
+import { config } from 'aws-sdk';
+import { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY } from './const';
 
 async function bootstrap() {
-  console.log(process.env.DB_HOST);
+  config.update({
+    accessKeyId: AWS_ACCESS_KEY_ID,
+    secretAccessKey: AWS_SECRET_ACCESS_KEY,
+    region: process.env.AWS_REGION,
+  });
   const app = await NestFactory.create(AppModule);
   app.use(headers);
   app.enableCors();

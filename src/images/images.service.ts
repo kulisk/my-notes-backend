@@ -4,21 +4,21 @@ import { DeleteResult, Repository } from 'typeorm';
 import { ImageEntity } from './image.entity';
 import { Note } from '../notes/entities/note.entity';
 import { ImageDto } from './image.dto';
-import * as fs from 'fs';
 import { DeleteImageInterface } from '../interfaces';
+import { S3Service } from './s3.service';
 
 @Injectable()
 export class ImagesService {
   constructor(
     @InjectRepository(ImageEntity)
     private imageRepository: Repository<ImageEntity>,
+    private s3Service: S3Service,
   ) {}
 
-  async create(file: Express.Multer.File, note: Note): Promise<ImageEntity> {
+  async create(file, note: Note): Promise<ImageEntity> {
     const image: ImageDto = new ImageDto();
     image.originalName = file.originalname;
-    image.customName = file.filename;
-    image.path = file.path;
+    image.key = file.key;
     image.note = note;
     return await this.imageRepository.save(image);
   }
@@ -29,15 +29,9 @@ export class ImagesService {
       const newCustomName = `${originalName}-${Date.now()}-${Math.round(
         Math.random() * 1e9,
       )}.${extension}`;
-      const newPath = 'upload\\' + newCustomName;
-      try {
-        fs.copyFileSync(imageToCopy.path, newPath);
-      } catch (error) {
-        console.log(error);
-      }
+      await this.s3Service.copy(imageToCopy.key, newCustomName);
       const newImage = this.imageRepository.create();
-      newImage.path = newPath;
-      newImage.customName = newCustomName;
+      newImage.key = newCustomName;
       newImage.originalName = originalName;
       newImage.note = note;
       await this.imageRepository.save(newImage);
@@ -54,22 +48,9 @@ export class ImagesService {
       return result;
     }
     for (const image of images) {
-      try {
-        fs.unlinkSync(image.path);
-      } catch (err) {
-        console.error(err);
-      }
+      await this.s3Service.delete(image.key);
       result.push(await this.imageRepository.delete(image.id));
     }
     return result;
-  }
-
-  async delete(image: ImageEntity): Promise<DeleteResult> {
-    try {
-      fs.unlinkSync(image.path);
-    } catch (err) {
-      console.error(err);
-    }
-    return await this.imageRepository.delete(image.id);
   }
 }
