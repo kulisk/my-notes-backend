@@ -17,9 +17,7 @@ import { UpdateNoteDto } from './dto/update-note.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { UserDto } from '../users/dto/user.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
 import { FileHelper } from '../shared/fileHelper';
-import { Express } from 'express';
 import { MaxFilesCount } from './constants';
 import { CreateResultDto } from './dto/create-result.dto';
 import * as S3Storage from 'multer-s3';
@@ -71,20 +69,6 @@ export class NotesController {
   @UseGuards(AuthGuard())
   findOne(@Param('id') id: string) {
     return this.notesService.findOne(+id);
-  }
-
-  @Get('count/getCount')
-  @UseGuards(AuthGuard())
-  getCount(@Req() req) {
-    const user = <UserDto>req.user;
-    return this.notesService.getCount(user);
-  }
-
-  @Get('count/getCount/:term')
-  @UseGuards(AuthGuard())
-  getSearchCount(@Param('term') term: string, @Req() req) {
-    const user = <UserDto>req.user;
-    return this.notesService.getSearchCount(term, user);
   }
 
   @Get('search/:term/:page')

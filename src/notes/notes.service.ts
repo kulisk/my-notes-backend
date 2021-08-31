@@ -51,7 +51,10 @@ export class NotesService {
     return savedNote as CreateResultDto;
   }
 
-  async findAllInPage({ id }: UserDto, page: number): Promise<Note[]> {
+  async findAllInPage(
+    { id }: UserDto,
+    page: number,
+  ): Promise<[Note[], number]> {
     return await this.noteRepository
       .createQueryBuilder('note')
       .where('note.owner= :id', { id: id })
@@ -61,7 +64,7 @@ export class NotesService {
       })
       .skip(this.calcSkip(page))
       .take(NotesPerPage)
-      .getMany();
+      .getManyAndCount();
   }
 
   async findOne(id: number): Promise<Note> {
@@ -89,28 +92,11 @@ export class NotesService {
       .getOne();
   }
 
-  async getCount({ id }: UserDto): Promise<number> {
-    return await this.noteRepository
-      .createQueryBuilder('note')
-      .where('note.owner= :id', { id: id })
-      .getCount();
-  }
-
-  async getSearchCount(term: string, { id }: UserDto): Promise<number> {
-    return await this.noteRepository
-      .createQueryBuilder('note')
-      .where('note.owner= :id', { id: id })
-      .andWhere(
-        new Brackets((qb) => {
-          qb.where('note.title like :term', { term: `${term}%` })
-            .orWhere('note.content like :term', { term: `${term}%` })
-            .orWhere('note.tags like :term', { term: `%${term}%` });
-        }),
-      )
-      .getCount();
-  }
-
-  async search(term: string, page: number, { id }: UserDto): Promise<Note[]> {
+  async search(
+    term: string,
+    page: number,
+    { id }: UserDto,
+  ): Promise<[Note[], number]> {
     return await this.noteRepository
       .createQueryBuilder('note')
       .where('note.owner= :id', { id: id })
@@ -127,7 +113,7 @@ export class NotesService {
       })
       .skip(this.calcSkip(page))
       .take(NotesPerPage)
-      .getMany();
+      .getManyAndCount();
   }
 
   async update(id: number, updateNote, files): Promise<UpdateResult> {
