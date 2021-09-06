@@ -15,6 +15,7 @@ import { ConfigModule } from '@nestjs/config';
     NotesModule,
     ConfigModule.forRoot({
       envFilePath: ['.env'],
+      isGlobal: true,
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
