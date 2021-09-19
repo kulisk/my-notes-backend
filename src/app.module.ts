@@ -9,6 +9,7 @@ import { ImagesModule } from './images/images.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { ConfigModule } from '@nestjs/config';
+import { RecoveryModule } from './recovery/recovery.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { ConfigModule } from '@nestjs/config';
     AuthModule,
     UsersModule,
     ImagesModule,
+    RecoveryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

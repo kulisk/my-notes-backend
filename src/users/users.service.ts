@@ -8,6 +8,7 @@ import { toUserDto } from '../shared/mapper';
 import { LoginUserDto } from './dto/login-user.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtPayload } from '../auth/jwt.strategy';
+import { UpdatePasswordDto } from '../recovery/dto/update-password.dto';
 
 @Injectable()
 export class UsersService {
@@ -58,5 +59,19 @@ export class UsersService {
     return await this.findOne({
       where: { login },
     });
+  }
+
+  async findByEmail(email: string) {
+    return await this.userRepository.findOne({
+      where: {
+        email,
+      },
+    });
+  }
+
+  async update(id: string, updatePasswordDto: UpdatePasswordDto) {
+    const user = await this.userRepository.findOne(id);
+    user.password = updatePasswordDto.password;
+    return await this.userRepository.save(user);
   }
 }
