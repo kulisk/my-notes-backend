@@ -10,6 +10,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { ConfigModule } from '@nestjs/config';
 import { RecoveryModule } from './recovery/recovery.module';
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { RecoveryModule } from './recovery/recovery.module';
     UsersModule,
     ImagesModule,
     RecoveryModule,
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
