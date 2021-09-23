@@ -5,7 +5,8 @@ import { CreateUserDto } from '../users/dto/create-user.dto';
 import { LoginUserDto } from '../users/dto/login-user.dto';
 import { UserDto } from '../users/dto/user.dto';
 import { JwtPayload } from './jwt.strategy';
-import { jwtConstants } from './constants';
+import { ConfigService } from '@nestjs/config';
+import { envConstants } from '../config/env-constants';
 
 export interface RegistrationStatus {
   success: boolean;
@@ -21,6 +22,7 @@ export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   async validateUser(payload: JwtPayload): Promise<UserDto> {
@@ -45,7 +47,7 @@ export class AuthService {
     const user: JwtPayload = { login };
     const accessToken = this.jwtService.sign(user);
     return {
-      expiresIn: jwtConstants.expiresIn,
+      expiresIn: this.configService.get<string>(envConstants.JWT_EXPIRES_IN),
       accessToken,
     };
   }

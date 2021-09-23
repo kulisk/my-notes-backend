@@ -3,9 +3,10 @@ import { AuthService } from './auth.service';
 import { UsersModule } from '../users/users.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import { jwtConstants } from './constants';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
+import { ConfigService } from '@nestjs/config';
+import { envConstants } from '../config/env-constants';
 
 @Module({
   providers: [AuthService, JwtStrategy],
@@ -17,11 +18,14 @@ import { JwtStrategy } from './jwt.strategy';
       property: 'user',
       session: false,
     }),
-    JwtModule.register({
-      secret: jwtConstants.secret,
-      signOptions: {
-        expiresIn: jwtConstants.expiresIn,
-      },
+    JwtModule.registerAsync({
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>(envConstants.JWT_SECRET),
+        signOptions: {
+          expiresIn: configService.get<string>(envConstants.JWT_EXPIRES_IN),
+        },
+      }),
+      inject: [ConfigService],
     }),
   ],
   exports: [AuthService, PassportModule, JwtModule],
